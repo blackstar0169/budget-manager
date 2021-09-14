@@ -111,6 +111,7 @@ export default {
                 benef: '-'
             });
 
+            // Manualy registred preditions
             for (let i = 0; i < this.situations.length; i++) {
                 var date = moment(this.situations[i].date);
                 var amount = round(parseFloat(this.situations[i].amount), 2);
@@ -130,27 +131,32 @@ export default {
 
             // Start forcasting from the next month
             start.add(1, 'month');
-
-
             while(start.isBefore(end)) {
-                let expected = this.getExpectation(prevAmount, start);
-                let amountRequired = start.isBefore(moment().startOf('month')) && !hasAmountRequired;
+                var expected = this.getExpectation(prevAmount, start);
+                let endCurrentMonth = moment(start).endOf('month');
+                let amountRequired = (start.isBefore(moment().startOf('month'), 'day') || moment().isSameOrAfter(endCurrentMonth, 'day')) && !hasAmountRequired;
                 hasAmountRequired = amountRequired|hasAmountRequired;
                 futures.push({
                     date: start.format('MMM YYYY'),
                     amount: null,
                     amountRequired: amountRequired,
-                    expected: expected,
+                    expected: expected.expected,
+                    incomes: expected.incomes,
                     diff: ' - ',
-                    benef: round(expected - prevAmount, 2)
+                    benef: round(expected.expected - prevAmount, 2)
                 });
-                prevAmount = expected;
+                prevAmount = expected.expected;
                 start.add(1, 'month');
             }
 
             this.futures = futures;
         },
         getExpectation(prevAmount, start) {
+            console.log(prevAmount);
+            var ret = {
+                expected: round(prevAmount, 2),
+                incomes: []
+            };
             for (let i = 0; i < this.incomes.length; i++) {
                 const income = this.incomes[i];
                 let current = moment(start);
@@ -162,19 +168,26 @@ export default {
                     let recurrence = date.recur().every(parseInt(income.recurrenceNumber), income.recurrence);
                     let match = false;
 
-                    while (current.isBefore(end)) {
+                    while (current.isBefore(end) && !match) {
                         if (recurrence.matches(current)) {
                             match = true;
-                            prevAmount += income.amount;
+                            // console.log(income.amount);
+                            ret.expected += income.amount;
+                            ret.incomes.push(income);
                         }
                         current.add(1, 'day');
                     }
                 } else if (income.recurrence === 'unique' && date.isBetween(start, end)) {
-                    prevAmount += income.amount;
+                    // console.log(income.amount);
+                    ret.expected += income.amount;
+                    ret.incomes.push(income);
                 }
             }
 
-            return round(prevAmount, 2);
+            // console.log(ret.expected);
+
+            ret.expected = round(ret.expected, 2);
+            return ret;
         },
         updatePrevision(future) {
             let value = round(parseFloat(future.amount), 2);

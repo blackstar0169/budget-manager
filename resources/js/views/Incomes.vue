@@ -12,41 +12,49 @@
         <tbody>
             <tr v-for="income in incomes">
                 <td>
-                    <input type="text" @change="updateIncome(income)" v-model="income.label">
+                    <input type="text" class="form-control" @change="updateIncome(income)" v-model="income.label">
                 </td>
                 <td class="amount" :class="{ 'table-danger': income.amount < 0, 'table-success': income.amount >= 0 }">
-                    <input type="number" @change="updateIncome(income)" v-model="income.amount">
+                    <input type="number" class="form-control" @change="updateIncome(income)" v-model="income.amount">
                 </td>
                 <td class="date">
-                    <input type="date" @change="updateIncome(income)" v-model="income.date">
+                    <input type="date" class="form-control" @change="updateIncome(income)" v-model="income.date">
                 </td>
                 <td>
-                    <span v-if="income.recurrence !== 'unique'">Each</span>
-                    <input v-if="income.recurrence !== 'unique'" @change="updateIncome(income)" v-model="income.recurrenceNumber" type="number">
-                    <select type="text" v-model="income.recurrence" @change="updateIncome(income)">
-                        <option v-for="(label, index) in recurrences" :value="index">{{label}}</option>
-                    </select>
+                    <div class="d-flex align-items-center">
+                        <span v-if="income.recurrence !== 'unique'" class="me-2">Each</span>
+                        <input v-if="income.recurrence !== 'unique'" @change="updateIncome(income)" v-model="income.recurrenceNumber" type="number" class="form-control me-2">
+                        <select class="form-control" v-model="income.recurrence" @change="updateIncome(income)">
+                            <option v-for="(label, index) in recurrences" :value="index">{{label}}</option>
+                        </select>
+                    </div>
                 </td>
-                <td><button @click="deleteIncome(income)">Delete</button></td>
+                <td class="text-end">
+                    <button class="btn btn-danger" @click="deleteIncome(income)">
+                        <span class="icofont-trash"></span>
+                    </button>
+                </td>
             </tr>
             <tr class="new-income">
                 <td>
-                    <input type="text" v-model="newIncome.label">
+                    <input type="text" class="form-control" v-model="newIncome.label">
                 </td>
                 <td class="amount">
-                    <input type="number" min="1" class="amount" v-model="newIncome.amount">
+                    <input type="number" min="1" class="form-control amount" v-model="newIncome.amount">
                 </td>
                 <td>
-                    <input type="date" class="date" v-model="newIncome.date">
+                    <input type="date" class="form-control date" v-model="newIncome.date">
                 </td>
                 <td>
-                    <span v-if="newIncome.recurrence !== '' && newIncome.recurrence !== 'unique'">Each</span>
-                    <input v-if="newIncome.recurrence !== '' && newIncome.recurrence !== 'unique'" v-model="newIncome.recurrenceNumber" type="number">
-                    <select type="text" v-model="newIncome.recurrence">
-                        <option v-for="(label, index) in recurrences" :value="index">{{label}}</option>
-                    </select>
+                    <div class="d-flex">
+                        <span v-if="newIncome.recurrence !== '' && newIncome.recurrence !== 'unique'">Each</span>
+                        <input v-if="newIncome.recurrence !== '' && newIncome.recurrence !== 'unique'" v-model="newIncome.recurrenceNumber" type="number" class="form-control">
+                        <select class="form-control" v-model="newIncome.recurrence">
+                            <option v-for="(label, index) in recurrences" :value="index">{{label}}</option>
+                        </select>
+                    </div>
                 </td>
-                <td><button @click="addIncome">Validate</button></td>
+                <td><button class="btn btn-danger" @click="addIncome">Validate</button></td>
             </tr>
         </tbody>
     </table>

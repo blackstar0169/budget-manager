@@ -10,6 +10,7 @@ input[type="date"]{
 }
 table td.amount input, table td.amount .input-group{
     max-width: 185px;
+    width: 100%;
     margin: 0;
 }
 .input-group-append .input-group-text {
@@ -23,4 +24,7 @@ table td.amount input, table td.amount .input-group{
     line-height: 1;
     font-size: 1.1rem;
     background: transparent;
+}
+table .form-control {
+    display: inline-block;
 }

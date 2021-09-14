@@ -11,6 +11,7 @@ class IndexController extends Controller
             'recurrences' => config('app.recurrences'),
             'start_date' => config('app.start_date'),
             'start_money' => config('app.start_money'),
+            'baseURL' => route('index')
         ];
         return view('index', ['config' => $config]);
     }
