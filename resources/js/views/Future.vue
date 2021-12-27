@@ -1,40 +1,75 @@
 <template>
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Date</th>
-                <th>Amount</th>
-                <th>Expected</th>
-                <th>Difference</th>
-                <th>Benefice</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr v-for="future in futures">
-                <td>{{future.date}}</td>
-                <td v-if="!future.amountRequired" class="text-right amount">
-                    <span class="far fa-edit">{{future.amount}} €</span>
-                    <button class="btn-icon" title="Edit" v-if="future.isEditable" @click="future.amountRequired = true">
-                        <span class="icofont-ui-edit"></span>
-                    </button>
-                </td>
-                <td v-if="future.amountRequired" class="text-right amount">
-                    <div class="input-group">
-                        <input class="form-control" v-model="future.amount" type="number">
-                        <div class="input-group-append">
-                            <span class="input-group-text">€</span>
+    <div>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Amount</th>
+                    <th>Expected</th>
+                    <th>Difference</th>
+                    <th>Benefice</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-for="future in futures">
+                    <td>{{future.date}}</td>
+                    <td v-if="!future.amountRequired" class="text-right amount">
+                        <span class="far fa-edit">{{future.amount}} €</span>
+                        <button class="btn-icon" title="Edit" v-if="future.isEditable" @click="future.amountRequired = true">
+                            <span class="icofont-ui-edit"></span>
+                        </button>
+                    </td>
+                    <td v-if="future.amountRequired" class="text-right amount">
+                        <div class="input-group">
+                            <input class="form-control" v-model="future.amount" type="number">
+                            <div class="input-group-append">
+                                <span class="input-group-text">€</span>
+                            </div>
                         </div>
-                    </div>
-                    <button class="hover-icon btn-icon" title="Validate" @click="updatePrevision(future)">
-                        <span class="icofont-check"></span>
-                    </button>
-                </td>
-                <td>{{future.expected}} €</td>
-                <td :class="{ 'table-danger': future.diff < 0, 'table-success': future.diff >= 0 }">{{future.diff}} €</td>
-                <td :class="{ 'table-danger': future.benef < 0, 'table-success': future.benef >= 0 }">{{future.benef}} €</td>
-            </tr>
-        </tbody>
-    </table>
+                        <button class="hover-icon btn-icon" title="Validate" @click="updatePrevision(future)">
+                            <span class="icofont-check"></span>
+                        </button>
+                    </td>
+                    <td>
+                        {{future.expected}} €
+                        <span class="badge bg-secondary" data-bs-toggle="modal" data-bs-target="#incomes-modal" @click="updateIncomesModal(future)">i</span>
+                    </td>
+                    <td :class="{ 'table-danger': future.diff < 0, 'table-success': future.diff >= 0 }">{{future.diff}} €</td>
+                    <td :class="{ 'table-danger': future.benef < 0, 'table-success': future.benef >= 0 }">{{future.benef}} €</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Modal -->
+        <div class="modal fade" id="incomes-modal" tabindex="-1" aria-labelledby="incomes-modal-label" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="incomes-modal-label">Incomes/Outcomes list</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <table class="table table-striped" v-if="typeof modalFuture === 'object' && modalFuture !== null">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Price</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="income in modalFuture.incomes">
+                                <td>{{income.label}}</td>
+                                <td :class="{ 'table-danger': income.amount < 0, 'table-success': income.amount >= 0 }">{{income.amount}}</td>
+
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div>Total : {{modalFutureSum}}€</div>
+                </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </template>
 
 <style scoped>
@@ -106,12 +141,13 @@ export default {
             futures.push({
                 date: start.format('MMM YYYY'),
                 amount: prevAmount,
+                incomes: [],
                 expected: '-',
                 diff: '-',
                 benef: '-'
             });
 
-            // Manualy registred preditions
+            // Manualy registred predictions
             for (let i = 0; i < this.situations.length; i++) {
                 var date = moment(this.situations[i].date);
                 var amount = round(parseFloat(this.situations[i].amount), 2);
@@ -120,7 +156,8 @@ export default {
                     id: this.situations[i].id,
                     date: date.format('MMM YYYY'),
                     amount: amount,
-                    isEditable: true,
+                    isEditable: false,
+                    incomes: null,
                     amountRequired: false,
                     expected: round(parseFloat(this.situations[i].expected), 2),
                     diff: round(amount - this.situations[i].expected, 2),
@@ -139,6 +176,7 @@ export default {
                 futures.push({
                     date: start.format('MMM YYYY'),
                     amount: null,
+                    isEditable: true,
                     amountRequired: amountRequired,
                     expected: expected.expected,
                     incomes: expected.incomes,
@@ -152,7 +190,6 @@ export default {
             this.futures = futures;
         },
         getExpectation(prevAmount, start) {
-            console.log(prevAmount);
             var ret = {
                 expected: round(prevAmount, 2),
                 incomes: []
@@ -224,6 +261,16 @@ export default {
                     }
                 });
             }
+        },
+        updateIncomesModal(future) {
+            console.log(future);
+            this.modalFuture = future;
+            this.modalFutureSum = 0;
+            for (let i = 0; i < future.incomes.length; i++) {
+                this.modalFutureSum += future.incomes[i].amount;
+
+            }
+            this.modalFutureSum = round(parseFloat(this.modalFutureSum), 2);
         }
     },
     data() {
@@ -231,6 +278,8 @@ export default {
             incomes:null,
             situations:null,
             futures: [],
+            modalFuture: null,
+            modalFutureSum: 0,
         }
     }
 };
