@@ -32,7 +32,8 @@ class SituationController extends Controller
             [
                 'date' => ['date', 'date_format:Y-m-d'],
                 'amount' => ['required', 'between:-999999999999.99,999999999999.99'],
-                'expected' => ['required', 'between:-999999999999.99,999999999999.99']
+                'expected' => ['required', 'between:-999999999999.99,999999999999.99'],
+                'incomes' => ['required', 'json']
             ]
         );
 
@@ -43,7 +44,7 @@ class SituationController extends Controller
             ];
         }
 
-        $data = $request->only(['date', 'expected', 'amount']);
+        $data = $request->only(['date', 'expected', 'amount', 'incomes']);
         $situation = Situation::create($data);
 
         return [

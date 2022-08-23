@@ -10,6 +10,6 @@ class Situation extends Model
     use HasFactory;
 
     protected $fillable = [
-        'amount', 'date', 'expected'
+        'amount', 'date', 'expected', 'incomes'
     ];
 }

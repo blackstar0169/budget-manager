@@ -157,7 +157,7 @@ export default {
                     date: date.format('MMM YYYY'),
                     amount: amount,
                     isEditable: false,
-                    incomes: null,
+                    incomes: typeof this.situations[i].incomes === 'string' ? JSON.parse(this.situations[i].incomes) : null,
                     amountRequired: false,
                     expected: round(parseFloat(this.situations[i].expected), 2),
                     diff: round(amount - this.situations[i].expected, 2),
@@ -208,20 +208,17 @@ export default {
                     while (current.isBefore(end) && !match) {
                         if (recurrence.matches(current)) {
                             match = true;
-                            // console.log(income.amount);
                             ret.expected += income.amount;
                             ret.incomes.push(income);
                         }
                         current.add(1, 'day');
                     }
                 } else if (income.recurrence === 'unique' && date.isBetween(start, end)) {
-                    // console.log(income.amount);
                     ret.expected += income.amount;
                     ret.incomes.push(income);
                 }
             }
 
-            // console.log(ret.expected);
 
             ret.expected = round(ret.expected, 2);
             return ret;
@@ -243,10 +240,10 @@ export default {
                     this.renderFutures();
                 });
             } else {
-                console.log(future);
                 axios.post('/api/situations', {
                     date: moment(future.date, 'MMM YYYY').startOf('month').format('YYYY-MM-DD'),
                     amount: value,
+                    incomes: JSON.stringify(future.incomes),
                     expected: future.expected
                 }).then(res => {
                     if (res.data.status === true) {
@@ -263,7 +260,6 @@ export default {
             }
         },
         updateIncomesModal(future) {
-            console.log(future);
             this.modalFuture = future;
             this.modalFutureSum = 0;
             for (let i = 0; i < future.incomes.length; i++) {
